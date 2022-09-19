@@ -2,6 +2,7 @@
 import random
 from typing import Dict
 from typing_extensions import Self
+import luhn
 
 IIN = '400000'
 
@@ -21,8 +22,8 @@ def account_exists(account_number) -> bool:
     return account_number in Account.all_accounts
 
 
-def calculate_checksum(card_number_prefix):
-    return 4
+def calculate_check_digit(card_number_prefix):
+    return luhn.generate(card_number_prefix)
 
 
 class Account:
@@ -39,14 +40,8 @@ class Account:
     @property
     def card_number(self):
         card_number_prefix = f'{IIN}{self.account_number}'
-        checksum = calculate_checksum(card_number_prefix)
+        checksum = calculate_check_digit(card_number_prefix)
         return f'{card_number_prefix}{checksum}'
-
-    def __eq__(self, other):
-        return isinstance(other, Account) and self.account_number == other.account_number
-
-    def __hash__(self):
-        return hash(self.account_number)
 
 
 def create_account() -> Account:
@@ -54,8 +49,7 @@ def create_account() -> Account:
 
 
 def is_valid(card_number_input):
-    # todo implement card number validation
-    return True
+    return luhn.verify(card_number_input)
 
 
 def login() -> Account:
